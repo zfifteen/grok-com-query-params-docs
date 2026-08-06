@@ -1,0 +1,489 @@
+{
+  "meta": {
+    "title": "Grok.com Query Parameter Field Guide",
+    "subtitle": "Live authenticated experiment — observed behavior only",
+    "date": "2026-08-05",
+    "session": "Authenticated Safari · SuperGrok Plus · account Fate",
+    "host": "https://grok.com/",
+    "method": "Clean navigate → one parameter at a time → DOM + URL + localStorage observation → reset",
+    "disclaimer": "Only what was personally observed in-browser. No assumed internals. Behavior may change without notice."
+  },
+  "defaults": {
+    "url": "https://grok.com/",
+    "ui": [
+      "Logged-in SuperGrok Plus home / new chat",
+      "Empty composer placeholder: “What do you want to know?”",
+      "Model selector present (Fast / Expert / Auto / Build…)",
+      "Sidebar: New Chat, Imagine, Automations, Skills, Projects, History",
+      "Private control → /c#private (“Switch to Private Chat”)"
+    ]
+  },
+  "modesApi": {
+    "endpoint": "POST /rest/modes",
+    "observed": [
+      { "id": "auto", "title": "Auto", "note": "Chooses Fast or Expert · available" },
+      { "id": "fast", "title": "Fast", "note": "Quick responses · Grok 4.5 · available" },
+      { "id": "expert", "title": "Expert", "note": "Thinks hard · Grok 4.5 · available" },
+      { "id": "heavy", "title": "Heavy", "note": "Upgrade-gated (SuperGrok Heavy) · mode=heavy did not switch" },
+      { "id": "build", "title": "Build", "note": "Build apps and sites · Beta · UI switched; storage sticky was inconsistent" }
+    ]
+  },
+  "summary": {
+    "autoSubmit": ["q"],
+    "modeSelect": ["mode", "m", "#planemodel=plane:…"],
+    "private": ["#private", "/c#private"],
+    "noEffect": [
+      "prompt",
+      "model",
+      "temporary",
+      "temporary-chat",
+      "private (query)",
+      "side",
+      "teamId",
+      "chat",
+      "notificationId",
+      "rid (alone on /)",
+      "fileid (alone)"
+    ],
+    "voiceUnresolved": ["voice=true", "/voice"]
+  },
+  "parameters": [
+    {
+      "name": "q",
+      "kind": "query",
+      "status": "works",
+      "category": "prompt",
+      "urls": [
+        "https://grok.com/?q=PARAMTEST%20say%20only%20the%20word%20ALPHA",
+        "https://grok.com/chat?q=…",
+        "https://grok.com/c?q=…"
+      ],
+      "effects": [
+        "Auto-submits non-empty prompt (does not only pre-fill)",
+        "Navigates to /c/<conversationId>?rid=<uuid>",
+        "Creates History entry for normal (non-private) chats",
+        "Empty q= does nothing"
+      ],
+      "notes": "Primary deep-link for Shortcuts / open-with-prompt flows."
+    },
+    {
+      "name": "prompt",
+      "kind": "query",
+      "status": "noop",
+      "category": "prompt",
+      "urls": ["https://grok.com/?prompt=PARAMTEST_PROMPT_ONLY_say_BETA"],
+      "effects": ["No pre-fill", "No auto-submit", "Query string retained"],
+      "notes": "No visible effect in this session."
+    },
+    {
+      "name": "mode",
+      "kind": "query",
+      "status": "works",
+      "category": "mode",
+      "urls": [
+        "https://grok.com/?mode=fast",
+        "https://grok.com/?mode=expert",
+        "https://grok.com/?mode=auto",
+        "https://grok.com/?mode=heavy",
+        "https://grok.com/?mode=build"
+      ],
+      "effects": [
+        "fast / expert / auto switch the Model select control and modes-selected-id",
+        "heavy: no change (not available without Heavy tier)",
+        "build: Model control showed Build Beta; localStorage stickiness was inconsistent"
+      ],
+      "notes": "Client checks mode id against available modes list."
+    },
+    {
+      "name": "m",
+      "kind": "query",
+      "status": "works",
+      "category": "mode",
+      "urls": ["https://grok.com/?m=expert", "https://grok.com/?m=1"],
+      "effects": [
+        "m=expert behaves like mode=expert",
+        "m=1 (numeric) did not change mode"
+      ],
+      "notes": "Alias of mode for string mode ids."
+    },
+    {
+      "name": "model",
+      "kind": "query",
+      "status": "noop",
+      "category": "mode",
+      "urls": ["https://grok.com/?model=expert", "https://grok.com/?model=fast"],
+      "effects": ["No model change"],
+      "notes": "Unlike mode/m — no visible effect."
+    },
+    {
+      "name": "#private",
+      "kind": "hash",
+      "status": "works",
+      "category": "privacy",
+      "urls": ["https://grok.com/#private", "https://grok.com/c#private"],
+      "effects": [
+        "Enters Private chat UI",
+        "Toggle becomes Switch to Default Chat",
+        "Disclaimer: chat won’t appear in history and won’t train models",
+        "Hash often clears after load; private state remains"
+      ],
+      "notes": "UI Private control targets /c#private. Query ?private=true does nothing."
+    },
+    {
+      "name": "q + #private",
+      "kind": "combo",
+      "status": "works",
+      "category": "privacy",
+      "urls": ["https://grok.com/?q=PARAMTEST%20say%20only%20IOTA#private"],
+      "effects": [
+        "Auto-submits",
+        "Reply generated",
+        "URL stayed on https://grok.com/ (no /c/<id> path observed)",
+        "No History sidebar entry for the private run"
+      ],
+      "notes": "Best private deep-link pattern observed."
+    },
+    {
+      "name": "temporary",
+      "kind": "query",
+      "status": "noop",
+      "category": "privacy",
+      "urls": ["https://grok.com/?temporary=true"],
+      "effects": ["No private disclaimer", "No other UI change"],
+      "notes": "No visible effect."
+    },
+    {
+      "name": "temporary-chat",
+      "kind": "query",
+      "status": "noop",
+      "category": "privacy",
+      "urls": ["https://grok.com/?temporary-chat=true"],
+      "effects": ["No visible effect"],
+      "notes": ""
+    },
+    {
+      "name": "private",
+      "kind": "query",
+      "status": "noop",
+      "category": "privacy",
+      "urls": ["https://grok.com/?private=true"],
+      "effects": ["Still showed Switch to Private Chat — not private mode"],
+      "notes": "Use #private hash instead."
+    },
+    {
+      "name": "side",
+      "kind": "query",
+      "status": "noop",
+      "category": "misc",
+      "urls": ["https://grok.com/?side=true"],
+      "effects": ["No visible effect"],
+      "notes": ""
+    },
+    {
+      "name": "/chat and /c",
+      "kind": "path",
+      "status": "works",
+      "category": "routing",
+      "urls": ["https://grok.com/chat", "https://grok.com/c"],
+      "effects": [
+        "Empty new-chat UI",
+        "Not private by default",
+        "With ?q=… still auto-submits into /c/<id>?rid=…"
+      ],
+      "notes": "Useful new-chat bases; privacy still needs #private."
+    },
+    {
+      "name": "voice / /voice",
+      "kind": "query+path",
+      "status": "unresolved",
+      "category": "misc",
+      "urls": ["https://grok.com/?voice=true", "https://grok.com/voice"],
+      "effects": [
+        "URL normalized to https://grok.com/",
+        "No lasting voice-mode UI at 1s or 3s"
+      ],
+      "notes": "Mic permission / transient UI not confirmed. No lasting effect observed."
+    },
+    {
+      "name": "fileid",
+      "kind": "query",
+      "status": "partial",
+      "category": "attachments",
+      "urls": [
+        "https://grok.com/?fileid=not-a-real-id",
+        "https://grok.com/?q=…&fileid=not-a-real-id"
+      ],
+      "effects": [
+        "Alone: no visible change",
+        "With q: prompt still auto-submitted; fake id showed no clear attachment UI"
+      ],
+      "notes": "Client reads fileid beside q; real asset ids not tested."
+    },
+    {
+      "name": "rid",
+      "kind": "query",
+      "status": "partial",
+      "category": "routing",
+      "urls": ["https://grok.com/?rid=test-rid-123"],
+      "effects": [
+        "Alone on /: no visible effect",
+        "Appears after real sends as /c/<id>?rid=<uuid>"
+      ],
+      "notes": "Response / request correlation on chat URLs."
+    },
+    {
+      "name": "teamId",
+      "kind": "query",
+      "status": "noop",
+      "category": "misc",
+      "urls": ["https://grok.com/?teamId=abc"],
+      "effects": ["No visible home UI effect"],
+      "notes": ""
+    },
+    {
+      "name": "chat",
+      "kind": "query",
+      "status": "noop",
+      "category": "misc",
+      "urls": ["https://grok.com/?chat=abc"],
+      "effects": ["No visible home UI effect"],
+      "notes": "Workspace routes use chat= for conversation id; not on bare /."
+    },
+    {
+      "name": "notificationId",
+      "kind": "query",
+      "status": "noop",
+      "category": "misc",
+      "urls": ["https://grok.com/?notificationId=abc"],
+      "effects": ["No visible home UI effect"],
+      "notes": ""
+    },
+    {
+      "name": "#planemodel",
+      "kind": "hash",
+      "status": "works",
+      "category": "mode",
+      "urls": ["https://grok.com/#planemodel=plane:test123"],
+      "effects": [
+        "Model label became test123",
+        "modes-selected-id became plane:test123"
+      ],
+      "notes": "Sets mode id from hash without the availability check used by mode=."
+    },
+    {
+      "name": "q multiline / long / encoding",
+      "kind": "edge",
+      "status": "works",
+      "category": "prompt",
+      "urls": [
+        "https://grok.com/?q=Line1%0ALine2%20say%20only%20EPS",
+        "long encodeURIComponent navigation",
+        "?q=PARAMTEST+say+only+PLUSENC",
+        "?q=PARAMTEST%2Bsay%2Bonly%2BPLUSBONUS"
+      ],
+      "effects": [
+        "%0A preserved as line break in user bubble",
+        "Long prompts (~400+ chars) auto-submitted successfully",
+        "+ often acts as space in query decoding",
+        "%2B keeps literal + characters in the message"
+      ],
+      "notes": "Prefer encodeURIComponent for Shortcuts."
+    },
+    {
+      "name": "q + mode",
+      "kind": "combo",
+      "status": "works",
+      "category": "prompt",
+      "urls": ["https://grok.com/?q=PARAMTEST%20say%20only%20GAMMA&mode=expert"],
+      "effects": ["Auto-submit", "Model Expert", "Landed on /c/<id>?rid=…"],
+      "notes": "Both parameters applied together."
+    }
+  ],
+  "recipes": [
+    {
+      "id": "basic",
+      "title": "Auto-run a prompt",
+      "blurb": "Open Grok and immediately send a message.",
+      "template": "https://grok.com/?q={PROMPT}",
+      "example": "https://grok.com/?q=Explain%20prime%20gaps%20in%20simple%20terms",
+      "tags": ["prompt", "shortcuts"]
+    },
+    {
+      "id": "mode",
+      "title": "Auto-run with Expert mode",
+      "blurb": "Force Expert before the first turn.",
+      "template": "https://grok.com/?q={PROMPT}&mode=expert",
+      "example": "https://grok.com/?q=Review%20this%20proof%20sketch&mode=expert",
+      "tags": ["prompt", "mode"]
+    },
+    {
+      "id": "fast",
+      "title": "Auto-run with Fast mode",
+      "blurb": "Quick responses for lightweight tasks.",
+      "template": "https://grok.com/?q={PROMPT}&mode=fast",
+      "example": "https://grok.com/?q=One-line%20summary%20of%20TCP&mode=fast",
+      "tags": ["prompt", "mode"]
+    },
+    {
+      "id": "private",
+      "title": "Private auto-run",
+      "blurb": "Send without a lasting History entry (observed).",
+      "template": "https://grok.com/?q={PROMPT}#private",
+      "example": "https://grok.com/?q=Draft%20a%20sensitive%20note#private",
+      "tags": ["prompt", "privacy"]
+    },
+    {
+      "id": "private-expert",
+      "title": "Private + Expert",
+      "blurb": "Combine privacy hash with mode selection.",
+      "template": "https://grok.com/?q={PROMPT}&mode=expert#private",
+      "example": "https://grok.com/?q=Think%20hard%20about%20this&mode=expert#private",
+      "tags": ["prompt", "mode", "privacy"],
+      "caveat": "Put #private at the end of the URL. Query params must come before the hash."
+    },
+    {
+      "id": "mode-only",
+      "title": "Switch mode only",
+      "blurb": "Land on an empty chat with a chosen mode.",
+      "template": "https://grok.com/?mode={MODE}",
+      "example": "https://grok.com/?mode=auto",
+      "tags": ["mode"]
+    }
+  ],
+  "harnessRecipes": [
+    {
+      "id": "clip-expert",
+      "title": "Clipboard → Grok Expert",
+      "blurb": "Whatever is on the macOS pasteboard becomes the auto-submitted prompt in Expert mode. Perfect after copying an error, email, or PR comment.",
+      "capabilities": ["terminal", "pbpaste", "Safari"],
+      "tags": ["hermes", "clipboard", "expert"],
+      "snippet": "python3 - <<'PY'\nimport subprocess, urllib.parse\ntext = subprocess.check_output([\"pbpaste\"], text=True).strip()\nassert text, \"clipboard empty\"\nurl = \"https://grok.com/?q=\" + urllib.parse.quote(text) + \"&mode=expert\"\nsubprocess.run([\"open\", \"-a\", \"Safari\", url], check=True)\nprint(url)\nPY",
+      "notes": "Uses the user's logged-in Safari profile — not an embedded bot browser."
+    },
+    {
+      "id": "file-private",
+      "title": "Local file → Private Grok",
+      "blurb": "Ship a log, dump, or notes file into a private auto-run so it does not stick in History the way normal ?q= chats do.",
+      "capabilities": ["terminal", "filesystem", "privacy"],
+      "tags": ["hermes", "files", "private"],
+      "snippet": "FILE=\"/path/to/notes.md\"\npython3 - <<PY\nimport pathlib, urllib.parse, subprocess\np = pathlib.Path(\"$FILE\")\nbody = p.read_text()[:12000]  # keep URL sane\nprompt = f\"Analyze this file ({p.name}):\\n\\n{body}\"\nurl = \"https://grok.com/?q=\" + urllib.parse.quote(prompt) + \"&mode=expert#private\"\nsubprocess.run([\"open\", \"-a\", \"Safari\", url], check=True)\nprint(\"opened\", len(prompt), \"chars\")\nPY",
+      "notes": "URL length limits still apply — truncate or summarize huge files first in Hermes, then open Grok for a second pass."
+    },
+    {
+      "id": "git-diff-review",
+      "title": "git diff → Expert review",
+      "blurb": "From any repo working tree, open Grok on the unstaged (or staged) diff for a fast second-opinion review.",
+      "capabilities": ["terminal", "git"],
+      "tags": ["hermes", "git", "expert"],
+      "snippet": "cd /path/to/repo\npython3 - <<'PY'\nimport subprocess, urllib.parse\ndiff = subprocess.check_output(\n    [\"bash\", \"-lc\", \"git --no-pager diff | head -c 14000\"], text=True\n)\nprompt = \"Review this git diff. List bugs, risks, missing tests.\\n\\n\" + diff\nurl = \"https://grok.com/?q=\" + urllib.parse.quote(prompt) + \"&mode=expert\"\nsubprocess.run([\"open\", \"-a\", \"Safari\", url], check=True)\nprint(url[:160], \"…\")\nPY",
+      "notes": "Hermes can run this in the project cwd. Prefer private hash if the diff is sensitive."
+    },
+    {
+      "id": "safari-applescript",
+      "title": "Open in already-authenticated Safari",
+      "blurb": "Force the front Safari document (same cookies/session the human uses) instead of a cold browser profile.",
+      "capabilities": ["osascript", "Safari"],
+      "tags": ["hermes", "safari", "session"],
+      "snippet": "PROMPT='Summarize the last commit message style in this repo'\nENC=$(python3 -c \"import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))\" \"$PROMPT\")\nURL=\"https://grok.com/?q=${ENC}&mode=fast\"\nosascript -e \"tell application \\\"Safari\\\" to set URL of front document to \\\"$URL\\\"\"",
+      "notes": "This is what the original experiment used. Embedded Browserbase sessions are often signed out."
+    },
+    {
+      "id": "hermes-computer-use-harvest",
+      "title": "computer_use: open + harvest reply",
+      "blurb": "Hermes navigates grok.com in the desktop Safari window, waits for generation, then reads the AX tree / JS DOM for the reply text to paste into a report.",
+      "capabilities": ["computer_use", "Safari", "observe.js pattern"],
+      "tags": ["hermes", "computer-use", "automation"],
+      "snippet": "# 1) Navigate (AppleScript or computer_use)\nosascript -e 'tell application \"Safari\" to set URL of front document to \"https://grok.com/?q=Say%20only%20READY&mode=fast\"'\n# 2) Wait for settle\nsleep 8\n# 3) Read back via JS in the authenticated page\nosascript -e 'tell application \"Safari\" to do JavaScript \"document.body.innerText.slice(0,2000)\" in front document'",
+      "notes": "Pair with a small observe.js helper (as in the param experiment) for structured JSON: url, modelLabel, privateState, reply snippet."
+    },
+    {
+      "id": "param-matrix-rerun",
+      "title": "Re-run the param matrix under Hermes",
+      "blurb": "Automated clean→one-param→observe→reset loop that writes fresh rows into data/findings.json when grok.com drifts.",
+      "capabilities": ["terminal", "Safari JS", "filesystem"],
+      "tags": ["hermes", "methodology", "docs"],
+      "snippet": "# Pseudocode Hermes loop (see methodology page)\nfor param in q mode m '#private' prompt model; do\n  osascript -e \"tell application \\\"Safari\\\" to set URL of front document to \\\"https://grok.com/\\\"\"\n  sleep 2\n  # load test URL for $param …\n  # dump observe.js JSON → /tmp/obs_$param.json\n  # merge into data/findings.json\ndone",
+      "notes": "Keep tests on #private or disposable prompts so History is not flooded."
+    },
+    {
+      "id": "cron-morning-opener",
+      "title": "Cron: open a standing Grok brief",
+      "blurb": "Hermes cron cannot “chat” as you inside Safari, but it can open a prepared deep link on a schedule (local-only deliver) so the tab is waiting when you sit down.",
+      "capabilities": ["cronjob", "open/Safari"],
+      "tags": ["hermes", "cron", "ritual"],
+      "snippet": "# Hermes cron idea (local deliver):\n# schedule: 0 9 * * 1-5\n# script opens:\nopen -a Safari 'https://grok.com/?q=Morning%20brief%3A%20what%20should%20I%20prioritize%20today%20given%20my%20active%20projects&mode=expert'",
+      "notes": "CLI cron deliver='local' saves output only — use open in a no_agent script for a pure URL launch with zero tokens."
+    },
+    {
+      "id": "second-opinion",
+      "title": "Hermes draft → Grok second opinion",
+      "blurb": "Hermes writes analysis locally (files, tests, math), then opens Grok with a compressed brief asking for contradictions and missing risks — dual-harness review.",
+      "capabilities": ["filesystem", "terminal", "Safari"],
+      "tags": ["hermes", "review", "expert"],
+      "snippet": "BRIEF=$(cat /tmp/hermes-brief.md | head -c 10000)\npython3 -c '\nimport pathlib, urllib.parse, subprocess\nbrief = pathlib.Path(\"/tmp/hermes-brief.md\").read_text()[:10000]\nprompt = \"Second opinion. List contradictions, missing risks, sharper claims.\\n\\n\" + brief\nurl = \"https://grok.com/?q=\" + urllib.parse.quote(prompt) + \"&mode=expert\"\nsubprocess.run([\"open\", \"-a\", \"Safari\", url], check=True)\n'",
+      "notes": "Keep Hermes as lead; Grok is the adversarial reviewer. Use #private for unpublished research."
+    },
+    {
+      "id": "idea-selection",
+      "title": "IDE / Terminal selection via pbcopy bridge",
+      "blurb": "Select code in IntelliJ or Terminal, copy, then one Hermes command (or Finder-adjacent shell alias) fires Expert mode on that selection.",
+      "capabilities": ["clipboard", "shell alias"],
+      "tags": ["hermes", "ide", "clipboard"],
+      "snippet": "# ~/.zshrc\ngrokq() {\n  local mode=\"${1:-expert}\"; shift || true\n  local text\n  if [ -n \"$1\" ]; then text=\"$*\"; else text=$(pbpaste); fi\n  local url=\"https://grok.com/?q=$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.stdin.read()))' <<<\"$text\")&mode=${mode}\"\n  open -a Safari \"$url\"\n}\n# usage: copy code, then:  grokq expert\n# or:  git diff | grokq   (if you adapt to read stdin)",
+      "notes": "Tiny local affordance; Hermes can install the alias and verify with a dry-run echo of the URL."
+    },
+    {
+      "id": "build-mode-spike",
+      "title": "Build-mode spike from a local spec",
+      "blurb": "Open Grok in Build mode with a short product spec from a local markdown file — useful for UI/app spikes while Hermes keeps owning the repo.",
+      "capabilities": ["filesystem", "mode=build"],
+      "tags": ["hermes", "build", "files"],
+      "snippet": "SPEC=./specs/spike.md\npython3 -c '\nimport pathlib, urllib.parse, subprocess, sys\nspec = pathlib.Path(sys.argv[1]).read_text()[:8000]\nprompt = \"Build a minimal interactive prototype from this spec:\\n\\n\" + spec\nurl = \"https://grok.com/?q=\" + urllib.parse.quote(prompt) + \"&mode=build\"\nsubprocess.run([\"open\", \"-a\", \"Safari\", url], check=True)\n' \"$SPEC\"",
+      "notes": "mode=build showed Build Beta UI in the live test; treat as observed, re-check if storage stickiness matters for your flow."
+    }
+  ],
+  "methodology": [
+    {
+      "step": 1,
+      "title": "Clean state",
+      "detail": "Navigate to https://grok.com/. Confirm authenticated session, empty composer, default model, Private control."
+    },
+    {
+      "step": 2,
+      "title": "Discover candidates",
+      "detail": "Inspect client bundles for URLSearchParams / routing (q, mode, m, fileid, #private, #planemodel). Add common guesses: prompt, model, temporary, private, side, voice, chat, rid."
+    },
+    {
+      "step": 3,
+      "title": "One parameter at a time",
+      "detail": "Load https://grok.com/?PARAM=VALUE (or hash/path). Record URL after settle, model label, private toggle, composer contents, auto-submit, History changes, localStorage modes-selected-id."
+    },
+    {
+      "step": 4,
+      "title": "Reset",
+      "detail": "Return to clean https://grok.com/ before the next candidate to avoid sticky mode/privacy bleed."
+    },
+    {
+      "step": 5,
+      "title": "Combos & edges",
+      "detail": "Test q+mode, q+#private, multiline %0A, long prompts, + vs %2B, empty/malformed q, mode refresh survival."
+    },
+    {
+      "step": 6,
+      "title": "Cross-check modes",
+      "detail": "POST /rest/modes in-page to list available mode ids and upgrade gates (Heavy)."
+    },
+    {
+      "step": 7,
+      "title": "Report only observations",
+      "detail": "No speculation about server internals. Mark no-ops and unresolved cases explicitly."
+    }
+  ],
+  "discoveryNotes": [
+    "Main prompt mount reads location.search q and optional fileid; non-empty q triggers handleSend with linkQuery, disableMemory, disablePersonalization.",
+    "Incognito/private hash constant is #private.",
+    "Mode URL params tried in order: mode, then m — value must match an available mode id.",
+    "Hash #planemodel=(plane:…) calls setSelectedModeId without the availability gate.",
+    "Routing treats /chat and /c without id as temporary chat routes; after q submit, normal chats become /c/<uuid>?rid=…."
+  ]
+}
