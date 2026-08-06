@@ -100,14 +100,14 @@ Legend: **Disposition** = what the upgrade produces. **Rationale** = why that di
 
 | Field | Value |
 |-------|--------|
-| **Disposition** | **UMBRELLA SCRIPT** `scripts/clipboard_to_grok.py` + one SKILL.md recipe line |
+| **Disposition** | **UMBRELLA SCRIPT** via sole CLI `scripts/open_grok.py --clipboard` + one SKILL.md recipe line |
 | **Standalone skill?** | **No** |
-| **Scores** | A1 B1 C1 D2 E1 → total 6 borderline, but A/B low → script wins |
-| **Rationale** | Linear: read clipboard → encode → open Safari. Failure modes are “empty clipboard” and “Safari not logged in” — documentable in pitfalls, not a multi-phase protocol. High reuse does **not** justify a separate skill name; reuse is exactly why it should be a **named script** the umbrella always knows. |
-| **Why not skill** | Creating `grok-clipboard` would duplicate umbrella triggers (“send this to grok”) and add index noise. Any agent that can load the umbrella can run the script. |
-| **Script contract** | CLI: `--mode expert\|fast\|auto\|build` (default expert), `--private`, `--dry-run`, `--max-chars N`. Exit 2 if clipboard empty. Print final URL. |
+| **Scores** | A1 B1 C1 D2 E1 → commentary only (see §1.2); disposition from flowchart: encode+open → SCRIPT |
+| **Rationale** | Linear: read clipboard → encode → open Safari. Failure modes are “empty clipboard” and “Safari not logged in” — documentable in pitfalls, not a multi-phase protocol. High reuse does **not** justify a separate skill name; reuse is exactly why it is a **flag on the shared CLI**. |
+| **Why not skill** | Creating `grok-clipboard` would duplicate umbrella triggers (“send this to grok”) and add index noise. |
+| **Script contract** | `python3 scripts/open_grok.py --clipboard [--mode expert\|fast\|auto\|build] [--private] [--dry-run] [--max-chars N]`. Default mode `expert`. Exit 2 if clipboard empty. Print final URL. Uses `grok_url.py` + `open_safari.py` only. |
 | **Verification** | `pbpaste` non-empty fixture → dry-run URL contains encoded text + `mode=`; private flag appends `#private` only at end. |
-| **Site sync** | Keep harness card; snippet may say “prefer skill script path once installed.” |
+| **Site sync** | Keep harness card; snippet should prefer skill `open_grok.py --clipboard` once installed. |
 
 ---
 
@@ -115,13 +115,13 @@ Legend: **Disposition** = what the upgrade produces. **Rationale** = why that di
 
 | Field | Value |
 |-------|--------|
-| **Disposition** | **UMBRELLA SCRIPT** `scripts/file_to_grok.py` |
+| **Disposition** | **UMBRELLA SCRIPT** via `scripts/open_grok.py --file PATH` (default `--private`) |
 | **Standalone skill?** | **No** |
-| **Scores** | A1 B1 C2 D1 E2 → judgment on truncation + secret risk, still one pipeline |
-| **Rationale** | Same glue as clipboard with path argument + forced or default `#private`. The *judgment* (how much to truncate, whether to summarize first in Hermes) belongs in **SKILL.md section “When the file is too large”**, not a second skill. Secret-risk is a **pitfall checklist**, not a separate skill. |
-| **Why not skill** | “Open file in Grok” is a parameter variant of clipboard/git recipes; one `open_grok.py` core with subcommands is better than three skills. |
-| **Script contract** | Args: path, `--mode`, `--private` default **true**, `--max-chars` default 12000, `--dry-run`. Refuse if path looks like `.env` / `*.pem` / `id_rsa` unless `--i-understand-secrets`. |
-| **Verification** | Temp file with known string → dry-run URL; secret-name file without flag → exit nonzero. |
+| **Scores** | A1 B1 C2 D1 E2 → commentary only; flowchart: encode+open → SCRIPT |
+| **Rationale** | Same glue as clipboard with path argument + default `#private`. The *judgment* (how much to send, whether to summarize first in Hermes) belongs in **SKILL.md section “When the file is too large”**, not a second skill. Secret-risk is a **pitfall checklist**, not a separate skill. |
+| **Why not skill** | “Open file in Grok” is a parameter variant of clipboard/git recipes on one CLI. |
+| **Script contract** | `python3 scripts/open_grok.py --file PATH [--mode …] [--private\|--public] [--dry-run] [--max-chars N] [--preface TEXT]`. Private default **true** for `--file`. Refuse deny-listed paths unless override flag (exact secret policy refined in later review items). |
+| **Verification** | Temp file with known string → dry-run URL; deny-listed path without override → exit nonzero. |
 
 ---
 
@@ -129,13 +129,13 @@ Legend: **Disposition** = what the upgrade produces. **Rationale** = why that di
 
 | Field | Value |
 |-------|--------|
-| **Disposition** | **UMBRELLA SCRIPT** `scripts/git_diff_to_grok.py` |
+| **Disposition** | **UMBRELLA SCRIPT** via `scripts/open_grok.py --git-diff` |
 | **Standalone skill?** | **No** |
-| **Scores** | A1 B1 C1 D2 E1 |
-| **Rationale** | Classic local harness win, but still encode+open. Staged vs unstaged is a flag (`--staged`), not a skill boundary. Sensitive diffs → document `--private`. |
+| **Scores** | A1 B1 C1 D2 E1 → commentary only; flowchart: encode+open → SCRIPT |
+| **Rationale** | Classic local harness win, but still encode+open. Staged vs unstaged is `--staged`, not a skill boundary. Sensitive diffs → `--private`. |
 | **Why not skill** | Overlaps “second opinion” and “clipboard”; agents would thrash between skills. |
-| **Script contract** | Run in repo cwd (or `--cwd`). `git --no-pager diff` / `--staged`. Cap bytes. Prefix prompt template fixed in script for stability. `--mode expert` default. |
-| **Verification** | In a tiny git repo with known diff, dry-run contains hunk header fragment. |
+| **Script contract** | `python3 scripts/open_grok.py --git-diff [--staged] [--cwd DIR] [--mode expert] [--private] [--dry-run]`. Cap via shared max encoded-length policy. Fixed review preface inside CLI or `--preface`. |
+| **Verification** | Tiny git repo with known diff → dry-run URL contains hunk fragment. |
 
 ---
 
@@ -143,13 +143,13 @@ Legend: **Disposition** = what the upgrade produces. **Rationale** = why that di
 
 | Field | Value |
 |-------|--------|
-| **Disposition** | **UMBRELLA SECTION + shared helper** `scripts/lib/open_safari_url.sh` (or `.py`) used by **all** openers |
-| **Standalone skill?** | **No** — this is infrastructure |
-| **Scores** | A1 B2 C0 D2 E2 |
-| **Rationale** | Highest leverage **primitive**, lowest value as its own skill. Every recipe that “opens Grok” must call this helper so agents never default to embedded browser. Failure surface (no front document, Safari quit) belongs in shared pitfalls. |
-| **Why not skill** | Trigger would be “open URL in Safari” — far too broad and unrelated to grok.com-only loading. |
-| **Helper contract** | Input: URL string. Behavior: activate Safari; if no window, `make new document`; set URL of front document. Optional: return front URL after 1s for verify. |
-| **Verification** | Dry helper with `https://example.com/` only in manual test; grok tests use dry-run of callers. |
+| **Disposition** | **Shared library only** — `scripts/open_safari.py` (import/CLI used by **all** openers). Not a user-facing recipe entrypoint. |
+| **Standalone skill?** | **No** — infrastructure |
+| **Scores** | A1 B2 C0 D2 E2 → commentary only; flowchart: not a task type → helper under SCRIPT path |
+| **Rationale** | Highest leverage **primitive**, lowest value as its own skill. Every open goes through this module so agents never default to embedded browser. |
+| **Why not skill** | Trigger would be “open URL in Safari” — far too broad. |
+| **Helper contract** | `open_safari.py` / `open_url(url, *, dry_run=False, tab="new")` (tab default refined in later review item). Activate Safari; ensure a document; set URL. Optional return of front URL after short wait. **No** alternate path names (`lib_open_safari.py`, `scripts/lib/open_safari_url.sh` are **forbidden**). |
+| **Verification** | Dry-run skips osascript; wet path documented as manual smoke. |
 
 ---
 
@@ -157,14 +157,14 @@ Legend: **Disposition** = what the upgrade produces. **Rationale** = why that di
 
 | Field | Value |
 |-------|--------|
-| **Disposition** | **DEPTH MODULE** under umbrella: `references/harvest-grok-reply.md` + `scripts/observe_grok_page.js` + optional `scripts/harvest_grok_reply.py` orchestrating osascript |
-| **Standalone skill?** | **Not initially.** Promote only if harvest is used outside grok.com deep-link contexts (§6). |
-| **Scores** | A2 B2 C2 D1 E2 → total 9 → **must** be real procedure, not a one-liner card |
-| **Rationale** | This is the only recipe with **async UI**, false completion, AX vs JS readback, and “did it actually generate.” Improvising burns time and invents success. Depth module teaches: navigate → wait predicates → read structured observe JSON → extract assistant text → fail loud if still “Working”. |
-| **Why not separate skill yet** | Trigger is still “use grok.com from Hermes.” Umbrella description can include “harvest reply from Safari.” A second skill (`grok-safari-harvest`) is justified later if non-deep-link Safari automation grows (e.g. clicking History, Imagine). |
-| **Why not mere script** | Script can automate happy path; **procedure** must cover timeouts, private vs normal URL shapes (`/` vs `/c/uuid`), model label, and “don’t scrape sidebar.” |
-| **Module contents** | Wait strategy (poll title/body every 2s, max 90s); observe schema (url, title, modelLabel, privateState, bodySnippet, hasWorking); extraction heuristics; forbidden actions (don’t click paywalls/password). |
-| **Verification** | With a known `?q=Say%20only%20HARVEST_OK&mode=fast`, observe eventually contains HARVEST_OK or fail. |
+| **Disposition** | **DEPTH MODULE** under umbrella: `references/harvest-grok-reply.md` + `scripts/observe_grok_page.js` + `scripts/harvest_grok_reply.py` (orchestrates **open_grok / open_safari + observe poll**; not a second open CLI) |
+| **Standalone skill?** | **Not initially.** |
+| **Scores** | A2 B2 C2 D1 E2 → commentary only; flowchart: wait/poll/extract → DEPTH MODULE |
+| **Rationale** | Async UI, false completion, extract correctness — procedure required. |
+| **Why not separate skill yet** | Trigger still “use grok.com from Hermes.” |
+| **Why not mere script** | Procedure covers timeouts, URL shapes, model label, don’t scrape sidebar. |
+| **Module contents** | Wait strategy; observe schema; extraction; forbidden actions. (Name/osascript-first branding is a separate P0 item.) |
+| **Verification** | Known `?q=Say%20only%20HARVEST_OK&mode=fast` eventually contains HARVEST_OK or fail. |
 
 ---
 
@@ -172,14 +172,11 @@ Legend: **Disposition** = what the upgrade produces. **Rationale** = why that di
 
 | Field | Value |
 |-------|--------|
-| **Disposition** | **DEPTH MODULE** `references/param-matrix-rerun.md` + `scripts/rerun_param_matrix.py` (or staged shell + observe) writing/merging into **docs site** `data/findings.json` |
-| **Standalone skill?** | **Not initially** (same umbrella). Promote if matrix work becomes a scheduled product of its own. |
-| **Scores** | A2 B2 C2 D1 E2 → total 9 |
-| **Rationale** | Methodology skill-content: clean state, one param, reset, honesty rules, date-stamped matrix. Wrong improvisation corrupts the field guide. Ties skill ↔ site as one system. |
-| **Why not skill** | Overlaps umbrella’s existing “Method for re-verification” section; expand that into a module rather than fork a second name agents must discover. |
-| **Why not mere script** | Loop is easy; **what counts as observation**, how to mark noop/unresolved, and History pollution policy are protocol. |
-| **Module contents** | Candidate list source (matrix + optional bundle grep); observe.js path; merge rules for `findings.json`; require `#private` or disposable prompts; never claim source-only effects. |
-| **Verification** | Dry-run mode that does not navigate but validates merge against schema; wet-run limited to 2 known params on operator approval. |
+| **Disposition** | **DEPTH MODULE** `references/param-matrix-rerun.md` (+ automation scripts only if in scope for that milestone — see MVP split item). If a script exists later, it **calls** `open_safari.py` / observe helpers; it does **not** invent a parallel open CLI. |
+| **Standalone skill?** | **Not initially** |
+| **Scores** | A2 B2 C2 D1 E2 → commentary only; flowchart: multi-trial methodology → DEPTH MODULE |
+| **Rationale** | Methodology + data integrity. |
+| **Script contract (if any)** | No `open_grok.py` fork. Reuse shared observe + Safari primitives only. |
 
 ---
 
@@ -187,13 +184,9 @@ Legend: **Disposition** = what the upgrade produces. **Rationale** = why that di
 
 | Field | Value |
 |-------|--------|
-| **Disposition** | **DO NOT SKILL** as a procedure; **DO** document as **cron template** in `references/cron-templates.md` + optional `scripts/cron_open_grok.sh` |
+| **Disposition** | **DO NOT SKILL** as agent procedure; template + optional `scripts/cron_open_grok.sh` that either embeds a fixed URL or calls `open_grok.py --text '…' --mode expert` in `no_agent` cron — **not** a fourth Python entrypoint family |
 | **Standalone skill?** | **No** |
-| **Scores** | A0 B0 C0 D1 E0 |
-| **Rationale** | Best form is `no_agent=true` + script `open -a Safari 'url'` — **zero tokens**, no judgment. A skill that says “schedule morning brief” teaches cron usage already covered by Hermes cron docs; stuffing it into grok skill bloats triggers. |
-| **Why not skill** | Skills load into agent context for reasoning tasks. A pure launcher should never require an LLM skill load. |
-| **What umbrella says** | One paragraph: “For scheduled tab open, use cron + script; do not use agent turn.” Point to template. |
-| **Verification** | Manual: run script once; Safari opens correct URL. |
+| **Scores** | A0 B0 C0 D1 E0 → commentary only; flowchart: zero judgment launcher → DO NOT SKILL |
 
 ---
 
@@ -201,13 +194,11 @@ Legend: **Disposition** = what the upgrade produces. **Rationale** = why that di
 
 | Field | Value |
 |-------|--------|
-| **Disposition** | **UMBRELLA SECTION** (protocol) + thin wrapper script `scripts/brief_to_grok.py` |
-| **Standalone skill?** | **No** unless it becomes a named house style across many domains (then maybe `adversarial-second-opinion` generic — still not grok-specific) |
-| **Scores** | A1 B1 C2 D2 E1 |
-| **Rationale** | Value is the **role split** (Hermes leads, Grok adversariates) and brief shape, not the URL open. That is 15–25 lines of SKILL.md: when to invoke, what to put in brief, private for unpublished research, don’t paste secrets. Script only ships the brief file to URL. |
-| **Why not skill** | “Second opinion” is a general review pattern; a grok-only skill would be wrong abstraction. If promoted later, promote **generic** second-opinion skill that *calls* umbrella scripts. |
-| **Section contract** | Brief template headings: Claim / Evidence / Risks Hermes sees / Ask Grok for contradictions. Max brief size. Default `mode=expert`, optional `#private`. |
-| **Verification** | Operator dry-run with `/tmp/hermes-brief.md` sample. |
+| **Disposition** | **UMBRELLA SECTION** (protocol) + open via **`scripts/open_grok.py --file BRIEF [--mode expert] [--private] [--preface …]`**. **No** `brief_to_grok.py`. |
+| **Standalone skill?** | **No** (generic second-opinion skill only if promoted later outside this plan) |
+| **Scores** | A1 B1 C2 D2 E1 → commentary only; flowchart: short protocol without new I/O → SECTION |
+| **Rationale** | Value is role split + brief shape; open is the shared CLI. |
+| **Script contract** | Write brief to a path → `open_grok.py --file` only. |
 
 ---
 
@@ -215,12 +206,9 @@ Legend: **Disposition** = what the upgrade produces. **Rationale** = why that di
 
 | Field | Value |
 |-------|--------|
-| **Disposition** | **DO NOT SKILL**; **optional install note** in references + alias snippet in `scripts/install_grokq_alias.sh` (idempotent append to zshrc **only on operator request**) |
+| **Disposition** | **DO NOT SKILL**; human alias may wrap `open_grok.py --clipboard` if ever installed. Agent path is always `open_grok.py --clipboard`, never a shell function dependency. |
 | **Standalone skill?** | **No** |
-| **Scores** | A0 B0 C0 D2 E0 |
-| **Rationale** | User-facing shell UX, not agent procedure. Hermes may install alias when asked; day-to-day the human runs `grokq`. Agent should use `clipboard_to_grok.py` instead of depending on interactive shell functions. |
-| **Why not skill** | Skills for shell aliases are a category error. |
-| **Verification** | `type grokq` after optional install. |
+| **Scores** | A0 B0 C0 D2 E0 → commentary only; flowchart: human shell UX → DO NOT SKILL |
 
 ---
 
@@ -228,11 +216,35 @@ Legend: **Disposition** = what the upgrade produces. **Rationale** = why that di
 
 | Field | Value |
 |-------|--------|
-| **Disposition** | **UMBRELLA SCRIPT** flag on `file_to_grok.py --mode build` (no separate script required) |
+| **Disposition** | **UMBRELLA SCRIPT** via `scripts/open_grok.py --file SPEC --mode build [--preface '…']` |
 | **Standalone skill?** | **No** |
-| **Scores** | A1 B1 C1 D1 E1 |
-| **Rationale** | Same as file opener with different mode + prompt preface (“Build a minimal prototype…”). Matrix already notes build storage stickiness — document in pitfalls. |
-| **Why not skill** | Mode is a parameter, not a product surface. |
+| **Scores** | A1 B1 C1 D1 E1 → commentary only; flowchart: encode+open → SCRIPT |
+| **Rationale** | Mode is a flag on the shared file open path. |
+
+---
+
+## 3A. Canonical scripts tree (normative — overrides any older name)
+
+**Only these script paths may be created for open/URL work.** Any name in historical drafts (`clipboard_to_grok.py`, `file_to_grok.py`, `git_diff_to_grok.py`, `brief_to_grok.py`, `lib_open_safari.py`, `scripts/lib/open_safari_url.sh`) is **void**.
+
+```
+scripts/
+  grok_url.py              # pure build_grok_url(q, mode, private) + unit tests
+  open_safari.py           # sole Safari primitive (no alternate basenames)
+  open_grok.py             # SOLE user-facing CLI for content→URL→Safari
+                           #   --clipboard | --file PATH | --git-diff | --text STR | --stdin
+                           #   --mode --private/--public --max-chars --dry-run --preface --staged --cwd
+  observe_grok_page.js     # DOM snapshot for harvest / auth preflight (later items)
+  harvest_grok_reply.py    # depth: open + poll observe (not a second open CLI)
+  # optional non-open:
+  cron_open_grok.sh        # zero-LLM launcher; may call open_grok.py or open fixed URL
+  # optional later milestone only:
+  rerun_param_matrix.py
+```
+
+**Import graph:** `open_grok.py` → `grok_url.py` + `open_safari.py`.  
+`harvest_grok_reply.py` → `open_grok.py` and/or `open_safari.py` + `observe_grok_page.js`.  
+Nothing else opens Safari.
 
 ---
 
@@ -240,26 +252,23 @@ Legend: **Disposition** = what the upgrade produces. **Rationale** = why that di
 
 ```
 grok-com-deep-links/
-  SKILL.md                          # triggers, doctrine, decision tree, pitfalls, verify
+  SKILL.md
   references/
     query-param-matrix-2026-08-05.md
-    docs-site.md                    # path to IdeaProjects field guide + how to serve
-    harness-recipes.md              # index: recipe id → script/section/module
-    harvest-grok-reply.md           # DEPTH: open+wait+observe+extract
-    param-matrix-rerun.md           # DEPTH: clean/one/reset/merge honesty
-    cron-templates.md               # DO NOT SKILL launchers
+    docs-site.md
+    harness-recipes.md              # index: recipe id → open_grok flags / section / module
+    harvest-grok-reply.md           # DEPTH (name branding fixed in separate P0)
+    param-matrix-rerun.md           # DEPTH (automation scope fixed in MVP item)
   scripts/
-    lib_open_safari.py              # shared Safari open primitive
-    open_grok.py                    # core: text/file/stdin → URL → Safari
-      subcommands or flags:
-        --text / --file / --clipboard / --git-diff
-        --mode --private --max-chars --dry-run --preface
-    observe_grok_page.js            # DOM snapshot schema
-    harvest_grok_reply.py           # orchestrate open + poll observe
-    rerun_param_matrix.py           # optional; wet-run gated
-    cron_open_grok.sh               # zero-LLM launcher
-    install_grokq_alias.sh          # operator-opt-in only
+    grok_url.py
+    open_safari.py
+    open_grok.py
+    observe_grok_page.js
+    harvest_grok_reply.py
+    cron_open_grok.sh               # optional
 ```
+
+**Forbidden in tree:** per-recipe `*_to_grok.py` openers; duplicate Safari helpers.
 
 ### 4.1 SKILL.md description (index-facing)
 
@@ -309,22 +318,23 @@ On implement: add one line to site README and `references/docs-site.md` pointing
 
 ### Phase 1 — Scaffolding only (global-code-style Phase 1 for scripts)
 
-For each new Python script: signatures + rich docstrings/comments describing control flow; **no** full implementation yet if following 4-phase strictly for non-trivial scripts.
+For each non-trivial Python module: signatures + rich docstrings/comments describing control flow; **no** full implementation yet if following 4-phase strictly.
 
-Files to create (empty/scaffold):
-- `scripts/lib_open_safari.py`
+Files to create (empty/scaffold) — **names must match §3A only**:
+- `scripts/grok_url.py`
+- `scripts/open_safari.py`
 - `scripts/open_grok.py`
 - `scripts/observe_grok_page.js`
 - `scripts/harvest_grok_reply.py`
-- `scripts/rerun_param_matrix.py` (scaffold; wet logic behind `--wet`)
 - `references/harness-recipes.md`
 - `references/harvest-grok-reply.md`
-- `references/param-matrix-rerun.md`
-- `references/cron-templates.md`
+- `references/param-matrix-rerun.md` (doc OK in MVP; automation script only if milestone includes it)
+
+Do **not** scaffold: `clipboard_to_grok.py`, `file_to_grok.py`, `git_diff_to_grok.py`, `brief_to_grok.py`, `lib_open_safari.py`, `install_grokq_alias.sh`, or `rerun_param_matrix.py` unless that milestone is explicitly in scope.
 
 ### Phase 2 — Skeleton review
 
-Review against §3 matrix: every recipe id mapped; no standalone skills; secret refuse-list present; `#private` ordering enforced in URL builder helper.
+Review against §3 + **§3A**: every recipe id mapped to `open_grok.py` flags or depth module; no standalone skills; single Safari helper basename; `#private` ordering enforced in `grok_url.py`.
 
 ### Phase 3 — Incremental implementation (one unit at a time)
 
@@ -332,16 +342,15 @@ Order matters (dependencies):
 
 | Step | Unit | Tests / verify |
 |------|------|----------------|
-| 3.1 | URL builder pure function (`build_grok_url(q, mode, private)`) | Unit tests: encoding, mode, hash last, empty q raises |
-| 3.2 | `lib_open_safari.py` | Dry-run mode skips osascript; manual optional |
-| 3.3 | `open_grok.py --clipboard/--file/--git-diff` | Dry-run integration tests with fixtures |
-| 3.4 | Secret path refusals | Tests for `.env` |
+| 3.1 | `grok_url.py` pure `build_grok_url(q, mode, private)` | Unit tests: encoding, mode, hash last, empty q raises |
+| 3.2 | `open_safari.py` | Dry-run skips osascript; manual optional |
+| 3.3 | `open_grok.py --clipboard/--file/--git-diff/--text` | Dry-run integration tests with fixtures |
+| 3.4 | Secret path refusals on `--file` | Tests for `.env` |
 | 3.5 | `observe_grok_page.js` schema | Manual once in Safari |
 | 3.6 | `harvest_grok_reply.py` happy path | Opt-in wet test `HARVEST_OK` |
 | 3.7 | SKILL.md rewrite sections | `skill_view` / frontmatter validate |
-| 3.8 | Matrix rerun dry-run merge | Fixture JSON merge test |
+| 3.8 | Matrix (milestone-dependent) | Doc-only or dry-run — not required for open CLI MVP |
 | 3.9 | Site cross-links + skill `docs-site.md` update | Links resolve |
-| 3.10 | Optional alias installer | Only if operator asks |
 
 Commits: one logical unit per commit if skill dir is git-tracked; if not, checkpoint by updating plan checkboxes.
 
@@ -349,10 +358,11 @@ Commits: one logical unit per commit if skill dir is git-tracked; if not, checkp
 
 - [ ] Frontmatter valid; description trigger-first; body 8–15k chars target; heavy text in references
 - [ ] Zero standalone recipe skills created
-- [ ] All 10 harness ids appear in `harness-recipes.md` with disposition
-- [ ] Scripts are executable / `python3 scripts/... --help` works
+- [ ] All 10 harness ids appear in `harness-recipes.md` with disposition → **`open_grok.py` flags or module**
+- [ ] **Exactly one** user-facing open CLI: `open_grok.py`; **exactly one** Safari module: `open_safari.py`
+- [ ] `rg '_to_grok\\.py|lib_open_safari' scripts/` returns nothing
+- [ ] Scripts: `python3 scripts/open_grok.py --help` works
 - [ ] No secrets in examples
-- [ ] Related skills: `computer-use` / `macos-computer-use` mentioned for harvest escalation only
 - [ ] Field guide still serves; skill does not duplicate full matrix HTML
 - [ ] Fresh session can `skill_view(name='grok-com-deep-links')` and follow clipboard recipe without the website open
 
@@ -379,21 +389,21 @@ Never promote: clipboard, file, git-diff, alias, cron opener, build-mode flag.
 
 | Recipe id | Not a skill because | Lives as |
 |-----------|---------------------|----------|
-| `clip-expert` | Linear glue; high reuse → script | `open_grok.py --clipboard` |
-| `file-private` | Parameterized open + pitfalls | `open_grok.py --file` |
+| `clip-expert` | Linear glue; high reuse → CLI flag | `open_grok.py --clipboard` |
+| `file-private` | Parameterized open + pitfalls | `open_grok.py --file` (private default) |
 | `git-diff-review` | Parameterized open | `open_grok.py --git-diff` |
-| `safari-applescript` | Shared primitive, not a task type | `lib_open_safari.py` |
-| `cron-morning-opener` | Zero-LLM launcher; cron domain | `cron-templates.md` + shell |
-| `idea-selection` | Human shell UX | optional alias installer |
-| `build-mode-spike` | `--mode build` flag | same file opener |
-| `second-opinion` | Role protocol, thin open | SKILL section + brief file open |
+| `safari-applescript` | Shared primitive, not a task type | `open_safari.py` only |
+| `cron-morning-opener` | Zero-LLM launcher; cron domain | template + optional `cron_open_grok.sh` |
+| `idea-selection` | Human shell UX | optional alias wrapping `open_grok.py --clipboard` |
+| `build-mode-spike` | `--mode build` flag | `open_grok.py --file --mode build` |
+| `second-opinion` | Role protocol, thin open | SKILL section + `open_grok.py --file` |
 | URL-only recipes | Already doctrine | SKILL.md tables |
 | Site visual builder | Human UI | docs site only |
 
 | Recipe id | Deep procedure because | Lives as |
 |-----------|------------------------|----------|
-| `hermes-computer-use-harvest` | Waits, flaky UI, extract correctness | depth module + scripts |
-| `param-matrix-rerun` | Methodology + data integrity | depth module + scripts |
+| `hermes-computer-use-harvest` | Waits, flaky UI, extract correctness | depth module + `harvest_grok_reply.py` (uses shared open/observe) |
+| `param-matrix-rerun` | Methodology + data integrity | depth module (+ script only if milestone allows) |
 
 ---
 

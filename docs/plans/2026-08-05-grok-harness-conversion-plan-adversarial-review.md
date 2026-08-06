@@ -466,3 +466,14 @@ The plan’s **center of gravity is correct**: sprawl is the real enemy; the del
 | Method | Adversarial consistency pass + execution-sim (“literal future agent”) + cross-check vs live skill/site |
 | Not done | No implementation; no wet Safari re-test in this review |
 | Output path | `docs/plans/2026-08-05-grok-harness-conversion-plan-adversarial-review.md` |
+
+---
+
+## 12. Resolution log (operator-gated fixes)
+
+| ID | Finding | Status | Resolution |
+|----|---------|--------|------------|
+| **P0-1.1** | Script naming contradicts itself (§3 vs §4) | **Resolved in plan (pending commit)** | Conversion plan now has normative **§3A Canonical scripts tree**: sole CLI `open_grok.py`, sole Safari module `open_safari.py`, pure `grok_url.py`. All §3 recipe dispositions, Phase 1/3/4, and §7 tables updated. Per-recipe `*_to_grok.py` and `lib_open_safari*` names voided. Import graph stated. No code/scripts implemented yet. |
+| P0-1.2 | Scoring rule broken | Open | — |
+| P0-1.3 | computer_use harvest brand | Open | — |
+| P1+ | remaining | Open | — |
