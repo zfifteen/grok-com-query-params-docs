@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Recipes · Grok.com Query Parameter Field Guide</title>
+  <meta name="description" content="Deep-link recipes and a live URL builder for grok.com." />
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%237c8cff'/%3E%3Cstop offset='1' stop-color='%233de0c5'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <header class="site-nav">
+    <div class="wrap">
+      <a class="brand" href="../index.html">
+        <div class="brand-mark" aria-hidden="true"><span>G?</span></div>
+        <span>Grok Params</span>
+      </a>
+      <nav aria-label="Primary">
+        <ul class="nav-links">
+          <li><a href="../index.html">Overview</a></li>
+          <li><a href="parameters.html">Parameters</a></li>
+          <li><a href="recipes.html">Recipes</a></li>
+          <li><a href="methodology.html">Methodology</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="wrap">
+        <div class="eyebrow"><span class="dot"></span> Deep links</div>
+        <h1>Recipes &amp; URL builder</h1>
+        <p>
+          Patterns that worked in the authenticated session.
+          Use the builder for Apple Shortcuts, browser bookmarks, or agent hand-offs.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>Live builder</h2>
+            <p>Prompt is URL-encoded as you type. Hash always comes last.</p>
+          </div>
+        </div>
+        <div class="panel builder recipe-builder">
+          <div class="field">
+            <label for="builder-prompt">Prompt</label>
+            <input id="builder-prompt" type="text" value="Explain prime gaps in simple terms" />
+          </div>
+          <div class="field">
+            <label for="builder-mode">Mode</label>
+            <select id="builder-mode">
+              <option value="">(default / sticky)</option>
+              <option value="fast">fast</option>
+              <option value="expert" selected>expert</option>
+              <option value="auto">auto</option>
+              <option value="build">build</option>
+            </select>
+          </div>
+          <div class="field" style="display:flex;align-items:end;gap:0.75rem;padding-bottom:0.35rem">
+            <label style="display:flex;align-items:center;gap:0.55rem;text-transform:none;letter-spacing:0;font-size:0.95rem;color:var(--text)">
+              <input id="builder-private" type="checkbox" />
+              Private chat (<span class="mono">#private</span>)
+            </label>
+          </div>
+          <div class="builder-out field" style="grid-column:1/-1">
+            <label>Generated URL</label>
+            <div data-builder-out></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>Recipe cards</h2>
+            <p>Templates use <span class="mono">{PROMPT}</span> / <span class="mono">{MODE}</span> placeholders.</p>
+          </div>
+        </div>
+        <p class="empty" data-load-error hidden></p>
+        <div class="recipe-grid" data-recipes></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>Local harness recipes</h2>
+            <p>
+              Patterns that only make sense when an agent runs <em>on your Mac</em> —
+              Hermes terminal, authenticated Safari, clipboard, git, cron, computer_use.
+              These compose the deep links above with local I/O.
+            </p>
+          </div>
+          <span class="chip" data-harness-count>—</span>
+        </div>
+        <div class="recipe-grid harness-grid" data-harness-recipes></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap callout-grid">
+        <article class="panel callout">
+          <h3>Shortcut encoding tip</h3>
+          <p>
+            In Apple Shortcuts: <strong>URL Encode</strong> the prompt text, then
+            <strong>Combine Text</strong> with base
+            <span class="mono">https://grok.com/?q=</span>.
+            Open with <strong>Open URLs</strong>. That is a GET — no POST body.
+          </p>
+        </article>
+        <article class="panel callout">
+          <h3>Harness tip</h3>
+          <p>
+            Always open the <strong>user’s Safari</strong> (or Chrome profile) that is
+            already logged into grok.com. Embedded browser sessions are often signed out
+            and will not match SuperGrok / Private behavior.
+          </p>
+        </article>
+        <article class="panel callout">
+          <h3>Private ordering</h3>
+          <p>
+            Browsers treat everything after <span class="mono">#</span> as a fragment.
+            Write
+            <span class="mono">?q=…&amp;mode=expert#private</span>
+            — never put query parameters after the hash.
+          </p>
+        </article>
+        <article class="panel callout">
+          <h3>URL length</h3>
+          <p>
+            Giant diffs and full logs blow past practical URL limits. Let Hermes
+            summarize or truncate locally first, then deep-link the compressed brief.
+          </p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div>Observation log · <span data-meta-date>2026-08-05</span></div>
+      <div class="mono">data/findings.json</div>
+    </div>
+  </footer>
+
+  <script type="module" src="../assets/js/app.js"></script>
+</body>
+</html>
