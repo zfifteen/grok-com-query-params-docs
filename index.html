@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Grok.com Query Parameter Field Guide</title>
+  <meta name="description" content="Live authenticated experiment documenting every useful grok.com query parameter — observed behavior only." />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%237c8cff'/%3E%3Cstop offset='1' stop-color='%233de0c5'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <header class="site-nav">
+    <div class="wrap">
+      <a class="brand" href="index.html">
+        <div class="brand-mark" aria-hidden="true"><span>G?</span></div>
+        <span>Grok Params</span>
+      </a>
+      <nav aria-label="Primary">
+        <ul class="nav-links">
+          <li><a href="index.html">Overview</a></li>
+          <li><a href="pages/parameters.html">Parameters</a></li>
+          <li><a href="pages/recipes.html">Recipes</a></li>
+          <li><a href="pages/methodology.html">Methodology</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="eyebrow"><span class="dot" aria-hidden="true"></span> Field report · observed only</div>
+          <h1>
+            The <span class="grad">grok.com</span> deep-link map
+          </h1>
+          <p class="lede">
+            A visual field guide from a live, authenticated Safari session.
+            Every claim below was watched in the browser — URL bar, composer,
+            model control, History, and private mode — not inferred from docs.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="pages/recipes.html">Build a deep link</a>
+            <a class="btn btn-ghost" href="pages/parameters.html">Browse parameters</a>
+          </div>
+          <div class="meta-row">
+            <span class="chip">Date <strong data-meta-date>2026-08-05</strong></span>
+            <span class="chip">Session authenticated</span>
+            <span class="chip">Host grok.com</span>
+            <span class="chip">SuperGrok Plus</span>
+          </div>
+        </div>
+
+        <aside class="panel hero-card" aria-label="Experiment snapshot">
+          <div>
+            <div class="eyebrow" style="margin-bottom:0.75rem">Snapshot</div>
+            <p class="muted" style="margin:0" data-meta-session>
+              Authenticated Safari · SuperGrok Plus
+            </p>
+          </div>
+          <div class="stat-grid" data-stats>
+            <div class="stat"><b>—</b><span>Loading…</span></div>
+          </div>
+          <div class="orbit" aria-hidden="true">
+            <span class="orbit-node">?q=</span>
+            <span class="orbit-node">mode=</span>
+            <span class="orbit-node">#private</span>
+            <span class="orbit-node">#planemodel</span>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>What actually works</h2>
+            <p>Four buckets distilled from the full matrix. Click through for every URL and side effect.</p>
+          </div>
+          <a class="btn btn-ghost" href="pages/parameters.html">Full catalog →</a>
+        </div>
+        <div class="bucket-grid" data-buckets></div>
+        <p class="empty" data-load-error hidden></p>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>Mode ids from live API</h2>
+            <p>Captured via authenticated <span class="mono">POST /rest/modes</span> during the experiment.</p>
+          </div>
+        </div>
+        <div class="table-wrap panel">
+          <table>
+            <thead>
+              <tr>
+                <th>id</th>
+                <th>Title</th>
+                <th>Observation</th>
+              </tr>
+            </thead>
+            <tbody data-modes-table></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>Start here recipes</h2>
+            <p>Copy-paste deep links for Shortcuts, bookmarks, and agents. Hermes-local harness recipes live on the Recipes page.</p>
+          </div>
+          <a class="btn btn-ghost" href="pages/recipes.html">All recipes + harness →</a>
+        </div>
+        <div class="recipe-grid" data-recipe-preview></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap callout-grid">
+        <article class="panel callout">
+          <h3>Golden path</h3>
+          <ol>
+            <li>Encode the prompt with <span class="mono">encodeURIComponent</span>.</li>
+            <li>Use <span class="mono">?q=</span> to auto-submit.</li>
+            <li>Add <span class="mono">&amp;mode=expert</span> (or fast / auto) when needed.</li>
+            <li>Append <span class="mono">#private</span> last for private runs.</li>
+          </ol>
+        </article>
+        <article class="panel callout">
+          <h3>Hard rules from the run</h3>
+          <ul>
+            <li><span class="mono">prompt=</span> and <span class="mono">model=</span> did nothing.</li>
+            <li>Privacy is a <strong>hash</strong> (<span class="mono">#private</span>), not <span class="mono">?private=</span>.</li>
+            <li>Non-empty <span class="mono">q</span> auto-sends — it does not merely pre-fill.</li>
+            <li><span class="mono">mode=heavy</span> stayed put without SuperGrok Heavy.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>How this was measured</h2>
+            <p>Clean slate, one knob at a time, reset between trials. Details on the methodology page.</p>
+          </div>
+          <a class="btn btn-ghost" href="pages/methodology.html">Read methodology →</a>
+        </div>
+        <div class="panel panel-pad">
+          <p class="muted" style="margin:0">
+            Navigate → observe URL / model / private toggle / composer / History / <span class="mono">modes-selected-id</span>
+            → record → return to <span class="mono">https://grok.com/</span> → next parameter.
+            Client bundles were only used to <em>discover candidate names</em>; effects were confirmed live.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div>
+        <strong>Grok.com Query Parameter Field Guide</strong><br />
+        Observation log · not an official xAI document
+      </div>
+      <div>
+        Source data: <span class="mono">data/findings.json</span>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="assets/js/app.js"></script>
+</body>
+</html>
