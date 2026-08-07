@@ -1,3 +1,5 @@
+![Grok.com Query Parameter Field Guide](docs/assets/hero.png)
+
 # Grok.com Query Parameter Field Guide
 
 Visual HTML documentation of a **live, authenticated** experiment on [grok.com](https://grok.com/) (2026-08-05).
